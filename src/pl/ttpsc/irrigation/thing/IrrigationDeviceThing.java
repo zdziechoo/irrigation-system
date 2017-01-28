@@ -23,11 +23,36 @@ import com.thingworx.types.primitives.structs.Location;
 
 @SuppressWarnings("serial")
 @ThingworxPropertyDefinitions(properties = {	
-		@ThingworxPropertyDefinition(name="WaterPressure", description="Water Pressure", baseType="NUMBER", category = "Status", aspects={"isReadOnly:true"}),
-		@ThingworxPropertyDefinition(name="IrrigationStrength", description="Irrigation Strength", baseType="NUMBER",category = "Status", aspects={"isReadOnly:true"}),
-		@ThingworxPropertyDefinition(name="Location", description="Location", baseType="LOCATION",category = "Status", aspects={"isReadOnly:true"}),
-		@ThingworxPropertyDefinition(name="IrrigationState", description = "Irrigation State", baseType = "BOOLEAN",category = "Status", aspects={"isReadOnly:true"}),
-		@ThingworxPropertyDefinition(name="AlarmState", description = "Alarm State", baseType = "INTEGER",category = "Status", aspects={"isReadOnly:true"}),
+		@ThingworxPropertyDefinition(
+				name="WaterPressure", 
+				description="Water Pressure", 
+				baseType="NUMBER", 
+				category = "Status", 
+				aspects={"isReadOnly:FALSE", "defaultValue:0"}),
+		@ThingworxPropertyDefinition(
+				name="IrrigationStrength", 
+				description="Irrigation Strength", 
+				baseType="NUMBER",
+				category = "Status", 
+				aspects={"isReadOnly:FALSE", "defaultValue:0"}),
+		@ThingworxPropertyDefinition(
+				name="Location", 
+				description="Location", 
+				baseType="LOCATION",
+				category = "Status", 
+				aspects={"isReadOnly:FALSE"}),
+		@ThingworxPropertyDefinition(
+				name="IrrigationState", 
+				description = "Irrigation State", 
+				baseType = "BOOLEAN",
+				category = "Status", 
+				aspects={"isReadOnly:FALSE", "defaultValue:TRUE"}),
+		@ThingworxPropertyDefinition(
+				name="AlarmState", 
+				description = "Alarm State", 
+				baseType = "INTEGER",
+				category = "Status", 
+				aspects={"isReadOnly:FALSE","isLogged:TRUE", "defaultValue:3"}),
 })
 
 public class IrrigationDeviceThing extends VirtualThing{
@@ -73,8 +98,8 @@ public class IrrigationDeviceThing extends VirtualThing{
 		this.setSimpleWaterPressure();
 		this.setSimpleIrrigationStrength();
 		this.setSimpleLocation();
-		this.setSimpleIrrigationState();
-		this.setSimpleAlarmState();
+		//this.setSimpleIrrigationState();
+		//this.setSimpleAlarmState();
 		this.updateSubscribedProperties(15000);
 
 	}
@@ -107,14 +132,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 	}
 	
 	
-	/*@ThingworxServiceDefinition(name="SwitchingIrrigationOnOff", description="Service to remotely switch on and off irrigation system")
-	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType="NOTHING")
-	public void SwitchOnOff(
-			@ThingworxServiceParameter(name="irrigationState", description="StateOfDevice", baseType="BOOLEAN") Boolean irrigationState) throws Exception{
-				LOG.info("Setting Irrigation as {}", irrigationState);
-				this.irrigationState = irrigationState;
-				super.setProperty(IRRIGATION_STATE, irrigationState);
-			}*/
+
 
 	public Double getWaterPressure() {
 		return (Double) getProperty(WATER_PRESSURE).getValue().getValue();
@@ -128,7 +146,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		return (Double) getProperty(IRRIGATION_STRENGTH).getValue().getValue();
 	}
 
-	public void setIrrigationStrength(Double irrigationStrength) throws Exception {
+	public void setIrrigationStrength() throws Exception {
 		 setProperty(IRRIGATION_STRENGTH, this.irrigationStrength);
 	}
 
@@ -136,7 +154,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		return (Location) getProperty(LOCATION).getValue().getValue();
 	}
 
-	public void setLocation(Location location) throws Exception {
+	public void setLocation() throws Exception {
 		 setProperty(LOCATION, this.location);
 	}
 
@@ -144,7 +162,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		return (Boolean) getProperty(IRRIGATION_STATE).getValue().getValue();
 	}
 
-	public void setIrrigationState(boolean irrigationState) throws Exception {
+	public void setIrrigationState() throws Exception {
 		setProperty(IRRIGATION_STATE, this.irrigationState);
 	}
 
@@ -152,7 +170,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		return (Integer)getProperty(ALARM_STATE).getValue().getValue();
 	}
 
-	public void setAlarmState(Integer alarmState) throws Exception {
+	public void setAlarmState() throws Exception {
 		 setProperty(ALARM_STATE, this.alarmState);
 	}
 	
@@ -174,5 +192,14 @@ public class IrrigationDeviceThing extends VirtualThing{
 			throws Exception {
 		this.setPropertyValue(property.getName(), value);
 	}
+	
+/*	@ThingworxServiceDefinition(name="SwitchingIrrigationOnOff", description="Service to remotely switch on and off irrigation system")
+	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType="NOTHING")
+	public void SwitchOnOff(
+			@ThingworxServiceParameter(name="irrigationState", description="StateOfDevice", baseType="BOOLEAN") Boolean irrigationState) throws Exception{
+				LOG.info("Setting Irrigation as {}", irrigationState);
+				this.irrigationState = irrigationState;
+				setIrrigationState();
+			}*/
 	
 }
