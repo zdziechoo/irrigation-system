@@ -96,7 +96,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		
 		super.processScanRequest();
 		this.setSimpleWaterPressure();
-		this.setSimpleIrrigationStrength();
+		//this.setSimpleIrrigationStrength();
 		this.setSimpleLocation();
 		//this.setSimpleIrrigationState();
 		//this.setSimpleAlarmState();
@@ -131,9 +131,38 @@ public class IrrigationDeviceThing extends VirtualThing{
 		super.setProperty(ALARM_STATE, alarmState);
 	}
 	
+	@ThingworxServiceDefinition(name="SwitchIrraginationOnOff", description="Service to remotely switch on and off irrigation system")
+	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType="NOTHING")
+	public void SwitchIrraginationOnOff(
+			@ThingworxServiceParameter(name="checkOnIrrigation", description="StateOfDevice", baseType="BOOLEAN") Boolean irrigationState) throws Exception{
+				
+				if(irrigationState == null){
+					irrigationState = false;
+				}
+		
+				LOG.info("Setting Irrigation as {}", irrigationState);
+				this.irrigationState = irrigationState;
+				setIrrigationState();
+			}
+	@ThingworxServiceDefinition(name="SetStrengthOfIrrigation", description="Set irrigation strength of water")
+	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType = "NOTHING")
+	public void SetStrengthOfIrrigation(
+			@ThingworxServiceParameter(name="irrigationStrength", description="Strength of irrigation", baseType="NUMBER") Double irrigationStrength) throws Exception{
+				LOG.info("Setting irrigation strenght in device as {}", irrigationStrength);
+				this.irrigationStrength = irrigationStrength;
+				setIrrigationStrength();
+	}
 	
-
-
+	@ThingworxServiceDefinition(name="ResetLastAlarm", description="Reset last alarm state")
+	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType = "NOTHING")
+	public void ResetLastAlarm() throws Exception{
+				if(isAlarmStateOnDevice())
+				LOG.info("Resetting alarm state on device");
+				this.alarmState = 3;
+				setAlarmState();
+	}
+	
+	
 	public Double getWaterPressure() {
 		return (Double) getProperty(WATER_PRESSURE).getValue().getValue();
 	}
@@ -174,6 +203,10 @@ public class IrrigationDeviceThing extends VirtualThing{
 		 setProperty(ALARM_STATE, this.alarmState);
 	}
 	
+	private boolean isAlarmStateOnDevice(){
+		if(this.alarmState == 3)return false;
+		else return true;
+	}
 	
 	// From the VirtualThing class
 	// This method will get called when a connect or reconnect happens
@@ -193,13 +226,6 @@ public class IrrigationDeviceThing extends VirtualThing{
 		this.setPropertyValue(property.getName(), value);
 	}
 	
-/*	@ThingworxServiceDefinition(name="SwitchingIrrigationOnOff", description="Service to remotely switch on and off irrigation system")
-	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType="NOTHING")
-	public void SwitchOnOff(
-			@ThingworxServiceParameter(name="irrigationState", description="StateOfDevice", baseType="BOOLEAN") Boolean irrigationState) throws Exception{
-				LOG.info("Setting Irrigation as {}", irrigationState);
-				this.irrigationState = irrigationState;
-				setIrrigationState();
-			}*/
+
 	
 }
