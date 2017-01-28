@@ -65,7 +65,7 @@ public class IrrigationDeviceClient extends ConnectedThingClient{
 		catch (Exception e) {
 			LOG.error("An exception while initializing the client",e);
 		}
-		LOG.info("Vending Machine client is done. Exiting");
+		LOG.info("Irrigation system agent is done. Exiting");
 	}
 }
 	

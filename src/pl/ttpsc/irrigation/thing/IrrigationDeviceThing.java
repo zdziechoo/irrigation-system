@@ -1,10 +1,6 @@
 package pl.ttpsc.irrigation.thing;
 
 import java.util.Random;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.thingworx.communications.client.ConnectedThingClient;
 import com.thingworx.communications.client.things.VirtualThing;
 import com.thingworx.metadata.PropertyDefinition;
@@ -27,7 +23,7 @@ import com.thingworx.types.primitives.structs.Location;
 
 public class IrrigationDeviceThing extends VirtualThing{
 	
-	private static final Logger LOG = LoggerFactory.getLogger(IrrigationDeviceThing.class);
+	//private static final Logger LOG = LoggerFactory.getLogger(IrrigationDeviceThing.class);
 
 	public IrrigationDeviceThing(String name, String description, ConnectedThingClient client) {
 		super(name, description, client);
@@ -39,6 +35,12 @@ public class IrrigationDeviceThing extends VirtualThing{
 	private final static String LOCATION = "Location";
 	private final static String IRRIGATION_STATE = "IrrigationState";
 	private final static String ALARM_STATE = "AlarmState";
+	
+	private Double waterPressure;
+	private Double irrigationStrength;
+	private Location location;
+	private boolean irrigationState;
+	private Integer alarmState;
 	
 	@Override
 	public void processScanRequest() throws Exception {
@@ -54,32 +56,46 @@ public class IrrigationDeviceThing extends VirtualThing{
 	}
 	
 	private void setWaterPressure() throws Exception{
-		double waterPressure = 50+Math.random()*50;
+		this.waterPressure = 50+Math.random()*50;
 		super.setProperty(WATER_PRESSURE, waterPressure);	
 	}
 	
 	private void setIrrigationStrength () throws Exception{
-		double irrigationStrength = Math.random()*100;
+		this.irrigationStrength = Math.random()*100;
 		super.setProperty(IRRIGATION_STRENGTH, irrigationStrength);
 	}
 	
 	private void setLocation() throws Exception{
-		Location loc = new Location(40.8447819d, -73.8648268d, 14d);
-		LocationPrimitive location = new LocationPrimitive(loc);
-		super.setProperty(LOCATION, location);
+		this.location = new Location(51.8447819d, 19.8648268d, 14d);
+		LocationPrimitive loc = new LocationPrimitive(location);
+		super.setProperty(LOCATION, loc);
 	}
 	
 	private void setIrrigationState() throws Exception{
-		boolean irrigationState = false;
+		this.irrigationState = false;
 		super.setProperty(IRRIGATION_STATE, irrigationState);
 	}
 	
 	private void setAlarmState() throws Exception{
 		Random generator = new Random();
-		int alarmState = generator.nextInt(3);
+		this.alarmState = generator.nextInt(3);
 		super.setProperty(ALARM_STATE, alarmState);
 	}
 	
+	
+/*	@ThingworxServiceDefinition(name="SwitchingIrrigationOnOff", description="Service to remotly switch on and off irrigation system")
+	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType="NOTHING")
+	public void SwitchOnOff(
+			@ThingworxServiceParameter(name="IrrigationState", description="State", baseType="BOOLEAN") Boolean irrigationState) throws Exception{
+					setIrrigationState(irrigationState);
+			}
+	
+	private void setIrrigationState(Boolean irrigationState) throws Exception {
+		this.irrigationState = irrigationState;
+		setProperty(IRRIGATION_STATE, this.irrigationState);
+		
+	}*/
+
 	@Override
 	public void processPropertyWrite(PropertyDefinition property, @SuppressWarnings("rawtypes") IPrimitiveType value)
 			throws Exception {
