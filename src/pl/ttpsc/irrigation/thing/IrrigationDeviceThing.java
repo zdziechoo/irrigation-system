@@ -52,7 +52,19 @@ public class IrrigationDeviceThing extends VirtualThing{
 		super(name, description, client);
 		thingName = name;
 		super.initializeFromAnnotations();
+		this.init();
 	}
+	
+	
+	private void init(){
+		//Get the current values from the ThingWorx composer
+		waterPressure = getWaterPressure();
+		irrigationStrength = getIrrigationStrength();
+		location = getLocation();
+		irrigationState = isIrrigationState();
+		alarmState = getAlarmState();
+	}
+	
 	
 	@Override
 	public void processScanRequest() throws Exception {
