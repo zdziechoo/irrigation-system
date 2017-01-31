@@ -123,10 +123,11 @@ public class IrrigationDeviceThing extends VirtualThing{
 		
 		super.processScanRequest();
 		this.setSimpleWaterPressure();
-		this.setSimpleIrrigationStrength();
+		//this.setSimpleIrrigationStrength();
 		//this.setSimpleLocation();
-		this.setSimpleIrrigationState();
-		this.setSimpleAlarmState();
+		//this.setSimpleIrrigationState();
+		//this.setSimpleAlarmState();
+/*		this.setOffIrraginationIfAlarmStateIs();*/
 		this.updateSubscribedProperties(15000);
 
 	}
@@ -147,11 +148,10 @@ public class IrrigationDeviceThing extends VirtualThing{
 		super.setProperty(LOCATION, loc);
 	}
 	
-	private void setSimpleIrrigationState() throws Exception{
-		if(isAlarmStateOnDevice()){this.irrigationState = false;}
-		else{this.irrigationState = true;}
+/*	private void setSimpleIrrigationState() throws Exception{
+		this.setOffIrraginationIfAlarmStateIs();
 		super.setProperty(IRRIGATION_STATE, irrigationState);
-	}
+	}*/
 	
 	private void setSimpleAlarmState() throws Exception{
 		Random generator = new Random();
@@ -170,7 +170,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		
 				LOG.info("Setting Irrigation as {}", switchOn);
 				this.irrigationState = switchOn;
-				setIrrigationState();
+				this.setIrrigationState();
 			}
 	@ThingworxServiceDefinition(name="SetStrengthOfIrrigation", description="Set irrigation strength of water")
 	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType = "NOTHING")
@@ -178,16 +178,17 @@ public class IrrigationDeviceThing extends VirtualThing{
 			@ThingworxServiceParameter(name="irrigationStrength", description="Strength of irrigation", baseType="NUMBER") Double irrigationStrength) throws Exception{
 				LOG.info("Setting irrigation strenght in device as {}", irrigationStrength);
 				this.irrigationStrength = irrigationStrength;
-				setIrrigationStrength();
+				this.setIrrigationStrength();
 	}
 	
 	@ThingworxServiceDefinition(name="ResetLastAlarm", description="Reset last alarm state")
 	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType = "NOTHING")
 	public void ResetLastAlarm() throws Exception{
-				if(isAlarmStateOnDevice())
-				LOG.info("Resetting alarm state on device");
-				this.alarmState = 3;
-				setAlarmState();
+				if(isAlarmStateOnDevice()){
+					LOG.info("Resetting alarm state on device");
+					this.alarmState = 3;
+					this.setAlarmState();
+				}
 	}
 	
 	
@@ -240,9 +241,14 @@ public class IrrigationDeviceThing extends VirtualThing{
 	}
 	
 	private boolean isAlarmStateOnDevice(){
-		if(this.alarmState == 3)return false;
-		else return true;
+		if(this.alarmState != 3){return true;}
+		else {return false;}
 	}
+	
+/*	private void setOffIrraginationIfAlarmStateIs() throws Exception{
+		if(isAlarmStateOnDevice())this.irrigationState = false;
+		setIrrigationState();
+	}*/
 	
 	
 	public void synchronizeState() {
