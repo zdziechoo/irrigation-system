@@ -18,7 +18,8 @@ import com.thingworx.types.primitives.structs.Location;
 				category = "Status", 
 				aspects={
 						"isReadOnly:FALSE",
-						"pushType:VALUE"}),
+						"pushType:VALUE",
+						"isPersistent:TRUE"}),
 })
 
 public class IrrigationRouterThing extends VirtualThing{

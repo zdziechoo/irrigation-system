@@ -31,13 +31,17 @@ import com.thingworx.types.primitives.structs.Location;
 				description="Water pressure in the pump", 
 				baseType="NUMBER", 
 				category = "Status", 
-				aspects={"isReadOnly:FALSE", "defaultValue:0"}),
+				aspects={
+						"isReadOnly:FALSE", 
+						"defaultValue:0"}),
 		@ThingworxPropertyDefinition(
 				name="IrrigationStrength", 
 				description="Irrigation Strength", 
 				baseType="NUMBER",
 				category = "Status", 
-				aspects={"isReadOnly:FALSE", "defaultValue:0"}),
+				aspects={
+						"isReadOnly:FALSE", 
+						"defaultValue:0"}),
 		@ThingworxPropertyDefinition(
 				name="Location", 
 				description="Location", 
@@ -45,25 +49,35 @@ import com.thingworx.types.primitives.structs.Location;
 				category = "Status", 
 				aspects={
 						"isReadOnly:FALSE",
-						"pushType:VALUE"}),
+						"pushType:VALUE",
+						"isPersistent:TRUE"}),
 		@ThingworxPropertyDefinition(
 				name="IrrigationState", 
 				description = "Irrigation State", 
 				baseType = "BOOLEAN",
 				category = "Status", 
-				aspects={"isReadOnly:FALSE", "defaultValue:TRUE"}),
+				aspects={
+						"isReadOnly:FALSE", 
+						"defaultValue:TRUE",
+						"isPersistent:TRUE"}),
 		@ThingworxPropertyDefinition(
 				name="AlarmState", 
 				description = "Alarm State", 
 				baseType = "INTEGER",
 				category = "Status", 
-				aspects={"isReadOnly:FALSE","isLogged:TRUE", "defaultValue:3"}),
+				aspects={
+						"isReadOnly:FALSE",
+						"isLogged:TRUE", 
+						"defaultValue:3",
+						"isPersistent:TRUE"}),
 		@ThingworxPropertyDefinition(
 				name="RouterName", 
 				description = "Router Name", 
 				baseType = "THINGNAME",
 				category = "Status", 
-				aspects={"isReadOnly:FALSE"}),
+				aspects={
+						"isReadOnly:FALSE",
+						"isPersistent:TRUE"}),
 })
 
 public class IrrigationDeviceThing extends VirtualThing{
@@ -98,7 +112,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		//Get the current values from the ThingWorx composer
 		waterPressure = getWaterPressure();
 		irrigationStrength = getIrrigationStrength();
-		//location = getLocation();
+		location = getLocation();
 		irrigationState = isIrrigationState();
 		alarmState = getAlarmState();
 		routerName = getRouterName();
@@ -111,7 +125,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		this.setSimpleWaterPressure();
 		this.setSimpleIrrigationStrength();
 		//this.setSimpleLocation();
-		//this.setSimpleIrrigationState();
+		this.setSimpleIrrigationState();
 		this.setSimpleAlarmState();
 		this.updateSubscribedProperties(15000);
 
@@ -134,7 +148,8 @@ public class IrrigationDeviceThing extends VirtualThing{
 	}
 	
 	private void setSimpleIrrigationState() throws Exception{
-		this.irrigationState = false;
+		if(isAlarmStateOnDevice()){this.irrigationState = false;}
+		else{this.irrigationState = true;}
 		super.setProperty(IRRIGATION_STATE, irrigationState);
 	}
 	
@@ -229,14 +244,9 @@ public class IrrigationDeviceThing extends VirtualThing{
 		else return true;
 	}
 	
-	// From the VirtualThing class
-	// This method will get called when a connect or reconnect happens
-	// Need to send the values when this happens
-	// This is more important for a solution that does not send its properties on a regular basis
+	
 	public void synchronizeState() {
-		// Be sure to call the base class
 		super.synchronizeState();
-		// Send the property values to ThingWorx when a synchronization is required
 		super.syncProperties();
 	}
 	
@@ -247,6 +257,5 @@ public class IrrigationDeviceThing extends VirtualThing{
 		this.setPropertyValue(property.getName(), value);
 	}
 	
-
-	
+		
 }
