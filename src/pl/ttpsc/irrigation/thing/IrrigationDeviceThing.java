@@ -127,7 +127,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 		//this.setSimpleLocation();
 		//this.setSimpleIrrigationState();
 		//this.setSimpleAlarmState();
-/*		this.setOffIrraginationIfAlarmStateIs();*/
+		this.setOffIrraginationIfAlarmStateIs();
 		this.updateSubscribedProperties(15000);
 
 	}
@@ -159,9 +159,9 @@ public class IrrigationDeviceThing extends VirtualThing{
 		super.setProperty(ALARM_STATE, alarmState);
 	}
 	
-	@ThingworxServiceDefinition(name="SwitchIrraginationOnOff", description="Service to remotely switch on and off irrigation system")
+	@ThingworxServiceDefinition(name="SwitchIrraginationOn", description="Service to remotely switch on and off irrigation system")
 	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType="NOTHING")
-	public void SwitchIrraginationOnOff(
+	public void SwitchIrraginationOn(
 			@ThingworxServiceParameter(name="switchOn", description="Paramter to switch on irrigation. If empty irrigation on the device will be swich off", baseType="BOOLEAN") Boolean switchOn) throws Exception{
 				
 				if(switchOn == null){
@@ -172,6 +172,21 @@ public class IrrigationDeviceThing extends VirtualThing{
 				this.irrigationState = switchOn;
 				this.setIrrigationState();
 			}
+	
+	@ThingworxServiceDefinition(name="SwitchIrraginationOff", description="Service to remotely switch off irrigation system")
+	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType="NOTHING")
+	public void SwitchIrraginationOff(
+			@ThingworxServiceParameter(name="switchOff", description="Paramter to switch off irrigation. If empty irrigation on the device will be swich off", baseType="BOOLEAN") Boolean switchOff) throws Exception{
+				
+				if(switchOff == null){
+					switchOff = false;
+				}
+		
+				LOG.info("Setting Irrigation as {}", switchOff);
+				this.irrigationState = switchOff;
+				this.setIrrigationState();
+			}
+	
 	@ThingworxServiceDefinition(name="SetStrengthOfIrrigation", description="Set irrigation strength of water")
 	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType = "NOTHING")
 	public void SetStrengthOfIrrigation(
@@ -246,10 +261,10 @@ public class IrrigationDeviceThing extends VirtualThing{
 		else {return false;}
 	}
 	
-/*	private void setOffIrraginationIfAlarmStateIs() throws Exception{
+	private void setOffIrraginationIfAlarmStateIs() throws Exception{
 		if(isAlarmStateOnDevice())this.irrigationState = false;
 		setIrrigationState();
-	}*/
+	}
 	
 	
 	public void synchronizeState() {
