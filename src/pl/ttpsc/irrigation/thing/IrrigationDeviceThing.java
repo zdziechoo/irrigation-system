@@ -14,9 +14,12 @@ import com.thingworx.metadata.annotations.ThingworxServiceDefinition;
 import com.thingworx.metadata.annotations.ThingworxServiceParameter;
 import com.thingworx.metadata.annotations.ThingworxServiceResult;
 import com.thingworx.types.constants.CommonPropertyNames;
+import com.thingworx.types.primitives.BooleanPrimitive;
 import com.thingworx.types.primitives.IPrimitiveType;
+import com.thingworx.types.primitives.IntegerPrimitive;
 import com.thingworx.types.primitives.LocationPrimitive;
 import com.thingworx.types.primitives.NumberPrimitive;
+import com.thingworx.types.primitives.StringPrimitive;
 import com.thingworx.types.primitives.structs.Location;
 
 
@@ -25,7 +28,7 @@ import com.thingworx.types.primitives.structs.Location;
 @ThingworxPropertyDefinitions(properties = {	
 		@ThingworxPropertyDefinition(
 				name="WaterPressure", 
-				description="Water Pressure", 
+				description="Water pressure in the pump", 
 				baseType="NUMBER", 
 				category = "Status", 
 				aspects={"isReadOnly:FALSE", "defaultValue:0"}),
@@ -40,7 +43,9 @@ import com.thingworx.types.primitives.structs.Location;
 				description="Location", 
 				baseType="LOCATION",
 				category = "Status", 
-				aspects={"isReadOnly:FALSE"}),
+				aspects={
+						"isReadOnly:FALSE",
+						"pushType:VALUE"}),
 		@ThingworxPropertyDefinition(
 				name="IrrigationState", 
 				description = "Irrigation State", 
@@ -53,6 +58,12 @@ import com.thingworx.types.primitives.structs.Location;
 				baseType = "INTEGER",
 				category = "Status", 
 				aspects={"isReadOnly:FALSE","isLogged:TRUE", "defaultValue:3"}),
+		@ThingworxPropertyDefinition(
+				name="RouterName", 
+				description = "Router Name", 
+				baseType = "THINGNAME",
+				category = "Status", 
+				aspects={"isReadOnly:FALSE"}),
 })
 
 public class IrrigationDeviceThing extends VirtualThing{
@@ -64,6 +75,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 	private final static String LOCATION = "Location";
 	private final static String IRRIGATION_STATE = "IrrigationState";
 	private final static String ALARM_STATE = "AlarmState";
+	private final static String ROUTER_NAME = "RouterName";
 	private String thingName = null;
 	
 	private Double waterPressure;
@@ -71,6 +83,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 	private Location location;
 	private boolean irrigationState;
 	private Integer alarmState;
+	private String routerName;
 	
 	
 	public IrrigationDeviceThing(String name, String description, ConnectedThingClient client) {
@@ -85,21 +98,21 @@ public class IrrigationDeviceThing extends VirtualThing{
 		//Get the current values from the ThingWorx composer
 		waterPressure = getWaterPressure();
 		irrigationStrength = getIrrigationStrength();
-		location = getLocation();
+		//location = getLocation();
 		irrigationState = isIrrigationState();
 		alarmState = getAlarmState();
+		routerName = getRouterName();
 	}
-	
-	
+		
 	@Override
 	public void processScanRequest() throws Exception {
 		
 		super.processScanRequest();
 		this.setSimpleWaterPressure();
-		//this.setSimpleIrrigationStrength();
-		this.setSimpleLocation();
+		this.setSimpleIrrigationStrength();
+		//this.setSimpleLocation();
 		//this.setSimpleIrrigationState();
-		//this.setSimpleAlarmState();
+		this.setSimpleAlarmState();
 		this.updateSubscribedProperties(15000);
 
 	}
@@ -127,21 +140,21 @@ public class IrrigationDeviceThing extends VirtualThing{
 	
 	private void setSimpleAlarmState() throws Exception{
 		Random generator = new Random();
-		this.alarmState = generator.nextInt(3);
+		this.alarmState = generator.nextInt(4);
 		super.setProperty(ALARM_STATE, alarmState);
 	}
 	
 	@ThingworxServiceDefinition(name="SwitchIrraginationOnOff", description="Service to remotely switch on and off irrigation system")
 	@ThingworxServiceResult(name=CommonPropertyNames.PROP_RESULT, description="Result", baseType="NOTHING")
 	public void SwitchIrraginationOnOff(
-			@ThingworxServiceParameter(name="checkOnIrrigation", description="StateOfDevice", baseType="BOOLEAN") Boolean irrigationState) throws Exception{
+			@ThingworxServiceParameter(name="switchOn", description="Paramter to switch on irrigation. If empty irrigation on the device will be swich off", baseType="BOOLEAN") Boolean switchOn) throws Exception{
 				
-				if(irrigationState == null){
-					irrigationState = false;
+				if(switchOn == null){
+					switchOn = false;
 				}
 		
-				LOG.info("Setting Irrigation as {}", irrigationState);
-				this.irrigationState = irrigationState;
+				LOG.info("Setting Irrigation as {}", switchOn);
+				this.irrigationState = switchOn;
 				setIrrigationState();
 			}
 	@ThingworxServiceDefinition(name="SetStrengthOfIrrigation", description="Set irrigation strength of water")
@@ -176,7 +189,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 	}
 
 	public void setIrrigationStrength() throws Exception {
-		 setProperty(IRRIGATION_STRENGTH, this.irrigationStrength);
+		 setProperty(IRRIGATION_STRENGTH, new NumberPrimitive(this.irrigationStrength));
 	}
 
 	public Location getLocation() {
@@ -184,15 +197,15 @@ public class IrrigationDeviceThing extends VirtualThing{
 	}
 
 	public void setLocation() throws Exception {
-		 setProperty(LOCATION, this.location);
+		 setProperty(LOCATION, new LocationPrimitive(this.location));
 	}
-
+	
 	public boolean isIrrigationState() {
 		return (Boolean) getProperty(IRRIGATION_STATE).getValue().getValue();
 	}
 
 	public void setIrrigationState() throws Exception {
-		setProperty(IRRIGATION_STATE, this.irrigationState);
+		setProperty(IRRIGATION_STATE, new BooleanPrimitive(this.irrigationState));
 	}
 
 	public Integer getAlarmState() {
@@ -200,7 +213,15 @@ public class IrrigationDeviceThing extends VirtualThing{
 	}
 
 	public void setAlarmState() throws Exception {
-		 setProperty(ALARM_STATE, this.alarmState);
+		 setProperty(ALARM_STATE, new IntegerPrimitive(this.alarmState));
+	}
+	
+	public String getRouterName() {
+		return (String)getProperty(ROUTER_NAME).getValue().getValue();
+	}
+
+	public void setRouterName() throws Exception {
+		 setProperty(ROUTER_NAME, new StringPrimitive(this.routerName));
 	}
 	
 	private boolean isAlarmStateOnDevice(){
