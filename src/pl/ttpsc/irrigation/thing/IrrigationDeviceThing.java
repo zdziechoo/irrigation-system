@@ -241,6 +241,7 @@ public class IrrigationDeviceThing extends VirtualThing{
 	}
 	
 	private boolean isAlarmStateOnDevice(){
+		this.alarmState = getAlarmState();
 		if(this.alarmState != 3){return true;}
 		else {return false;}
 	}
