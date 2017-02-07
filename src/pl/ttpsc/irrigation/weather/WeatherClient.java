@@ -3,12 +3,8 @@ package pl.ttpsc.irrigation.weather;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+
 
 public class WeatherClient {
 
@@ -38,14 +34,22 @@ public class WeatherClient {
 
 		JSONArray weatherStatusArray = (JSONArray) obj.getJSONArray("weather");
 		JSONObject lastestWeatherStatus = (JSONObject) weatherStatusArray.get(0);
-		String iconInfo = lastestWeatherStatus.getString("icon");
-		weather.setRain(isRain(iconInfo));
+		weather.setIcon(lastestWeatherStatus.getString("icon"));
+		
+		//String iconInfo = lastestWeatherStatus.getString("icon");
+		weather.setRain(isRain(weather.getIcon()));
 
 		return weather;
 	}
 
 	private static boolean isRain(String iconInfo) {
-		if (!iconInfo.equals("09d") && !iconInfo.equals("10d") && !iconInfo.equals("11d") && !iconInfo.equals("13d")) {
+		if (
+				!iconInfo.equals("09d") &&!iconInfo.equals("09n")
+				&& !iconInfo.equals("10d") && !iconInfo.equals("10n") 
+				&&!iconInfo.equals("11d") &&!iconInfo.equals("11n")
+				&& !iconInfo.equals("13d")&& !iconInfo.equals("13n")
+				&& !iconInfo.equals("50d")&& !iconInfo.equals("50n")
+				) {
 			return false;
 		} else
 			return true;

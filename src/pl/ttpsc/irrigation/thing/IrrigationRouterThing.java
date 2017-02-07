@@ -13,6 +13,7 @@ import com.thingworx.types.primitives.BooleanPrimitive;
 import com.thingworx.types.primitives.IPrimitiveType;
 import com.thingworx.types.primitives.LocationPrimitive;
 import com.thingworx.types.primitives.NumberPrimitive;
+import com.thingworx.types.primitives.StringPrimitive;
 import com.thingworx.types.primitives.structs.Location;
 
 import pl.ttpsc.irrigation.weather.Weather;
@@ -29,6 +30,8 @@ import pl.ttpsc.irrigation.weather.WeatherClient;
 		@ThingworxPropertyDefinition(name = "AtmosphericPressure", description = "Weather: atmospheric pressure", baseType = "NUMBER", category = "Status", aspects = {
 				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" }),
 		@ThingworxPropertyDefinition(name = "IsRain", description = "Weather: boolean type to define raining on the area", baseType = "BOOLEAN", category = "Status", aspects = {
+				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" }),
+		@ThingworxPropertyDefinition(name = "Icon", description = "Weather: boolean type to define raining on the area", baseType = "STRING", category = "Status", aspects = {
 				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" })})
 
 public class IrrigationRouterThing extends VirtualThing {
@@ -38,6 +41,7 @@ public class IrrigationRouterThing extends VirtualThing {
 	private final static String HUMIDITY = "Humidity";
 	private final static String ATMOSPHERIC_PRESSURE = "AtmosphericPressure";
 	private final static String IS_RAIN = "IsRain";
+	private final static String ICON = "Icon";
 
 	private Location routerLocation;
 	//private Double temperature;
@@ -64,7 +68,8 @@ public class IrrigationRouterThing extends VirtualThing {
 		this.setHumidity();
 		this.setAtmosphericPressure();
 		this.setIsRain();
-		this.updateSubscribedProperties(15000);
+		this.setIcon();
+		this.updateSubscribedProperties(150000);
 
 	}
 
@@ -116,6 +121,14 @@ public class IrrigationRouterThing extends VirtualThing {
 
 	public void setIsRain() throws Exception {
 		setProperty(IS_RAIN, new BooleanPrimitive(this.weather.isRain()));
+	}
+	
+	public String getIcon() {
+		return (String) getProperty(ICON).getValue().getValue();
+	}
+
+	public void setIcon() throws Exception {
+		setProperty(ICON, new StringPrimitive(this.weather.getIcon()));
 	}
 
 	public void synchronizeState() {

@@ -8,6 +8,7 @@ public class Weather {
 	private double temperature;
 	private double pressure;
 	private double humidity;
+	private String icon;
 
 	private boolean isRain;
 
@@ -62,4 +63,12 @@ public class Weather {
 		this.isRain = isRain;
 	}
 
+	public String getIcon() {
+		return icon;
+	}
+
+	public void setIcon(String icon) {
+		this.icon = icon;
+	}
+	
 }

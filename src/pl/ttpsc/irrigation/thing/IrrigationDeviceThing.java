@@ -1,6 +1,7 @@
 package pl.ttpsc.irrigation.thing;
 
 import java.io.IOException;
+import java.util.Random;
 
 import org.json.JSONException;
 import org.slf4j.Logger;
@@ -29,9 +30,9 @@ import pl.ttpsc.irrigation.weather.WeatherClient;
 @SuppressWarnings("serial")
 @ThingworxPropertyDefinitions(properties = {
 		@ThingworxPropertyDefinition(name = "WaterPressure", description = "Water pressure in the pump", baseType = "NUMBER", category = "Status", aspects = {
-				"isReadOnly:FALSE", "defaultValue:0" }),
+				"isReadOnly:FALSE", "isPersistent:TRUE" }),
 		@ThingworxPropertyDefinition(name = "IrrigationStrength", description = "Irrigation Strength", baseType = "NUMBER", category = "Status", aspects = {
-				"isReadOnly:FALSE", "defaultValue:0" }),
+				"isReadOnly:FALSE", "isPersistent:TRUE" }),
 		@ThingworxPropertyDefinition(name = "Location", description = "Location", baseType = "LOCATION", category = "Status", aspects = {
 				"isReadOnly:FALSE", "pushType:VALUE", "isPersistent:TRUE" }),
 		@ThingworxPropertyDefinition(name = "IrrigationState", description = "Irrigation State", baseType = "BOOLEAN", category = "Status", aspects = {
@@ -39,7 +40,7 @@ import pl.ttpsc.irrigation.weather.WeatherClient;
 		@ThingworxPropertyDefinition(name = "AlarmState", description = "Alarm State", baseType = "INTEGER", category = "Status", aspects = {
 				"isReadOnly:FALSE", "isLogged:TRUE", "defaultValue:3", "isPersistent:TRUE" }),
 		@ThingworxPropertyDefinition(name = "RouterName", description = "Router Name", baseType = "THINGNAME", category = "Status", aspects = {
-				"isReadOnly:FALSE", "isPersistent:TRUE" }),})
+				"isReadOnly:FALSE", "isPersistent:TRUE" }), })
 
 public class IrrigationDeviceThing extends VirtualThing {
 
@@ -75,46 +76,54 @@ public class IrrigationDeviceThing extends VirtualThing {
 		irrigationState = isIrrigationState();
 		alarmState = getAlarmState();
 		routerName = getRouterName();
-		weather = WeatherClient.getWeather(location.getLongitude(), location.getLatitude());
+		weather = getWeather(location.getLongitude(), location.getLatitude());
 	}
 
 	@Override
 	public void processScanRequest() throws Exception {
 
 		super.processScanRequest();
-		this.setSimpleWaterPressure();
-		// this.setSimpleIrrigationStrength();
+
+		/*this.setSimpleWaterPressure();
+		this.setSimpleIrrigationStrength();*/
+		/*this.setOffIrrigationIfRain();*/
+		irrigationState = isIrrigationState();
+		this.setOffIrraginationIfAlarmStateIs();
+		this.setOffIrraginationIfIrrigationStateOff();
 		// this.setSimpleLocation();
 		// this.setSimpleIrrigationState();
-		// this.setSimpleAlarmState();
-		this.setOffIrrigationIfRain();
-		this.setOffIrraginationIfAlarmStateIs();
+		/* this.setSimpleAlarmState(); */
+
 		this.updateSubscribedProperties(15000);
 
 	}
-
+	
 	private void setSimpleWaterPressure() throws Exception {
-		this.waterPressure = 50 + Math.random() * 50;
-		super.setProperty(WATER_PRESSURE, waterPressure);
+		if (!isAlarmStateOnDevice()) {
+			this.waterPressure = 50 + Math.random() * 50;
+			setWaterPressure();	
+		} else {
+			this.waterPressure = 0.0;
+			setWaterPressure();
+		}
+	}
+	
+	private void setSimpleIrrigationStrength() throws Exception {
+		if (!isAlarmStateOnDevice()){
+			this.irrigationStrength = Math.random() * 100;
+			setIrrigationStrength();
+			
+		} else {
+			this.irrigationStrength = 0.0;
+			setIrrigationStrength();
+		}
 	}
 
-	private void setSimpleIrrigationStrength() throws Exception {
-		this.irrigationStrength = Math.random() * 100;
-		super.setProperty(IRRIGATION_STRENGTH, irrigationStrength);
+	private void setSimpleAlarmState() throws Exception {
+		Random generator = new Random();
+		this.alarmState = generator.nextInt(4);
+		super.setProperty(ALARM_STATE, alarmState);
 	}
-	/*
-	 * private void setSimpleLocation() throws Exception{ this.location = new
-	 * Location(51.8447819d, 19.8648268d, 14d); LocationPrimitive loc = new
-	 * LocationPrimitive(location); super.setProperty(LOCATION, loc); }
-	 * 
-	 * private void setSimpleIrrigationState() throws Exception{
-	 * this.setOffIrraginationIfAlarmStateIs();
-	 * super.setProperty(IRRIGATION_STATE, irrigationState); }
-	 * 
-	 * private void setSimpleAlarmState() throws Exception{ Random generator =
-	 * new Random(); this.alarmState = generator.nextInt(4);
-	 * super.setProperty(ALARM_STATE, alarmState); }
-	 */
 
 	@ThingworxServiceDefinition(name = "SwitchOnIrrigation", description = "Switch on irrigation")
 	@ThingworxServiceResult(name = CommonPropertyNames.PROP_RESULT, description = "Result", baseType = "NOTHING")
@@ -197,6 +206,10 @@ public class IrrigationDeviceThing extends VirtualThing {
 	public void setRouterName() throws Exception {
 		setProperty(ROUTER_NAME, new StringPrimitive(this.routerName));
 	}
+	
+	private Weather getWeather (double longitude, double latitude) throws IOException, JSONException{
+		return WeatherClient.getWeather(location.getLongitude(), location.getLatitude());
+	}
 
 	private boolean isAlarmStateOnDevice() {
 		this.alarmState = getAlarmState();
@@ -206,25 +219,43 @@ public class IrrigationDeviceThing extends VirtualThing {
 			return false;
 		}
 	}
-	
-	private void setOffIrrigationIfRain() throws Exception{
-		if(weather.isRain()){
-			this.irrigationState = false;
-			setIrrigationState();
+
+	private void setOffIrrigationIfRain() throws Exception {
+		if (weather.isRain()) {
+			switchOffDevice();
 		}
 	}
 
 	private void setOffIrraginationIfAlarmStateIs() throws Exception {
-		if (isAlarmStateOnDevice()){
-			this.irrigationState = false;
-			setIrrigationState();
+		if (isAlarmStateOnDevice()) {
+			switchOffDevice();
 		}
+	}
+	
+	private void setOffIrraginationIfIrrigationStateOff() throws Exception {
+		this.irrigationState = isIrrigationState();
+		if(!this.irrigationState){
+			this.waterPressure = 0.0;
+			this.irrigationStrength = 0.0;
+			setWaterPressure();
+			setIrrigationStrength();
+		}	
+	}
+	
+	private void switchOffDevice() throws Exception{
+		this.irrigationState = false;
+		this.waterPressure = 0.0;
+		this.irrigationStrength = 0.0;
+		setIrrigationState();
+		setWaterPressure();
+		setIrrigationStrength();
 	}
 
 	public void synchronizeState() {
 		super.synchronizeState();
 		super.syncProperties();
 	}
+	
 
 	@Override
 	public void processPropertyWrite(PropertyDefinition property, @SuppressWarnings("rawtypes") IPrimitiveType value) throws Exception {
